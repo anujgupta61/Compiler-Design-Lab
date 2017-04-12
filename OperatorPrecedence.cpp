@@ -4,6 +4,34 @@ using namespace std ;
 vector<string> rhs ;
 vector<char> lhs ;
 map<char , bool> containsNull ;
+map<char , map<char , char> > opTable ;
+
+void buildTable() {
+  map<char , char> op1 ; // For id (t)
+  op1['t'] = '=' ;
+  op1['+'] = '<' ;
+  op1['*'] = '<' ;
+  op1['$'] = '<' ;
+  opTable['t'] = op1 ;
+  map<char , char> op2 ; // For +
+  op2['t'] = '>' ;
+  op2['+'] = '>' ;
+  op2['*'] = '>' ;
+  op2['$'] = '<' ;
+  opTable['+'] = op2 ;
+  map<char , char> op3 ; // For *
+  op3['t'] = '>' ;
+  op3['+'] = '<' ;
+  op3['*'] = '>' ;
+  op3['$'] = '<' ;
+  opTable['*'] = op3 ;
+  map<char , char> op4 ; // For $
+  op3['t'] = '>' ;
+  op3['+'] = '>' ;
+  op3['*'] = '>' ;
+  op3['$'] = '=' ;
+  opTable['$'] = op4 ;
+}
 
 vector<string> partProd(string str) {
   vector<string> parts ;
@@ -72,51 +100,116 @@ void parseStr(string str) {
         s . pop() ;
       }
       bool is_shift = true ;
-      for(int i = temp . length() - 1 ; i >= 0 ; i --) {
-        string temp1 = "" ;
-        for(int j = i ; j >= 0 ; j --)
-          temp1 += temp[j] ;
-        //cout << "Finding " << temp1 << "\n" ;
-        if(find(rhs . begin() , rhs . end() , temp1) != rhs . end()) { // Found in R.H.S.
-            is_shift = false ;
-            //cout << "inside\n" ;
-            int pos = find(rhs . begin() , rhs . end() , temp1) - rhs . begin() ;
-            char ch = lhs[pos] ;
-            string temp2 = "" ;
-            //cout << "Found at " << i << " " << temp . length() - 1 << "\n" ;
-            for(int j = i + 1 ; j <= temp . length() - 1 ; j ++)
-               temp2 += temp[j] ;
-            //cout << "Remaining " << temp2 << "\n" ;
-            temp = temp2 ;
-            temp . insert(0 , 1 , ch) ;
-            //cout << "After reduce - " << temp << "\n" ;
-            break ;
+      map<char , char> pre = opTable[q . front()] ;
+      char pr = pre[temp[0]] ;
+      if(pr == '>') { // Reduce
+        for(int i = temp . length() - 1 ; i >= 0 ; i --) {
+          string temp1 = "" ;
+          for(int j = i ; j >= 0 ; j --)
+            temp1 += temp[j] ;
+          //cout << "Finding " << temp1 << "\n" ;
+          if(find(rhs . begin() , rhs . end() , temp1) != rhs . end()) { // Found in R.H.S.
+              is_shift = false ;
+              //cout << "inside\n" ;
+              int pos = find(rhs . begin() , rhs . end() , temp1) - rhs . begin() ;
+              char ch = lhs[pos] ;
+              string temp2 = "" ;
+              //cout << "Found at " << i << " " << temp . length() - 1 << "\n" ;
+              for(int j = i + 1 ; j <= temp . length() - 1 ; j ++)
+                 temp2 += temp[j] ;
+              //cout << "Remaining " << temp2 << "\n" ;
+              temp = temp2 ;
+              temp . insert(0 , 1 , ch) ;
+              //cout << "After reduce - " << temp << "\n" ;
+              break ;
+          }
         }
-      }
-      if(is_shift) {
-        char ch = q . front() ;
-        q . pop() ;
-        if(ch != '$')
-          temp . insert(0 , 1 , ch) ;
+      } else {
+        if(is_shift) {
+          char ch = q . front() ;
+          q . pop() ;
+          if(ch != '$')
+            temp . insert(0 , 1 , ch) ;
+        }
       }
       for(int i = temp . length() - 1 ; i >= 0 ; i --) {
         s . push(temp[i]) ;
       }
-      printStkQ(s , q) ;
       if(! q . empty()) {
+        printStkQ(s , q) ;
         if(is_shift)
           cout << "\tShift\n" ;
         else
           cout << "\tReduce\n" ;
       }
   }
-  if(s . top() == 'S' && s . size() == 2)
+  // Reduce
+  char t = s . top() ;
+  if(t != '$' && t != 'S') {
+    while(true) {
+      string temp = "" ;
+      while(s . size() != 1) {
+        temp += s . top() ;
+        s . pop() ;
+      }
+      int start = 0 ;
+      again :
+      bool is_reduced = false ;
+      for(int i = temp . length() - 1 ; i >= start ; i --) {
+        string temp1 = "" ;
+        cout << temp << " : temp\n" ;
+        for(int j = i ; j >= start ; j --)
+          temp1 += temp[j] ;
+          cout << temp1 << "\n" ;
+        //cout << "Finding " << temp1 << "\n" ;
+        if(find(rhs . begin() , rhs . end() , temp1) != rhs . end()) { // Found in R.H.S.
+            //cout << "inside\n" ;
+            int pos = find(rhs . begin() , rhs . end() , temp1) - rhs . begin() ;
+            char ch = lhs[pos] ;
+            string temp2 = "" ;
+            for(int j = start + 1 ; j <= temp . length() - 1 ; j ++)
+              temp2 += temp[j] ;
+            //cout << "Found at " << i << " " << temp . length() - 1 << "\n" ;
+            for(int j = i + 1 ; j <= temp . length() - 1 ; j ++)
+               temp2 += temp[j] ;
+            //cout << "Remaining " << temp2 << "\n" ;
+            /*
+            for(int j = start + 1 ; j <= temp . length() - 1 ; j ++)
+              temp2 += temp[j] ;
+            */
+            temp = temp2 ;
+            temp . insert(0 , 1 , ch) ;
+            is_reduced = true ;
+            //cout << "After reduce - " << temp << "\n" ;
+            break ;
+        }
+      }
+      cout << "out\n" ;
+      if(start == temp . length() - 1) {
+        break ;
+      }
+      if(! is_reduced) {
+        start ++ ;
+        cout << "next\n" ;
+        goto again ;
+      }
+      else {
+        for(int i = temp . length() - 1 ; i >= 0 ; i --) {
+          s . push(temp[i]) ;
+        }
+        printStkQ(s , q) ;
+        cout << "\tReduce\n" ;
+      }
+    }
+  }
+  if(s . top() == 'S')
     cout << "\nString parsed ...\n" ;
   else
     cout << "\nString not parsed ...\n" ;
 }
 
 int main() {
+  buildTable() ;
   cout << "Enter the number of productions : " ;
   int n ;
   cin >> n ;
@@ -145,8 +238,7 @@ int main() {
   return 0 ;
 }
 /*
-S->ABC
-A->a
-B->b
-C->c
+S->T+S|T
+T->F*T|F
+F->t
 */
