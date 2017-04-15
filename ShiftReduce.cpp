@@ -133,6 +133,52 @@ int main() {
       lhs . push_back(prods[i][0]) ;
     }
   }
+  // For null productions
+  /*
+  for(int i = 0 ; i < n ; i ++) {
+    if(containsNull[prods[i][0]]) {
+      for(int j = 0 ; j < rhs . size() ; j ++) {
+        string rstr = rhs[j] ;
+        vector<size_t> nullPos ;
+        size_t found = rstr . find(prods[i][0]) ;
+        while(found != string::npos) {
+          nullPos . push_back(found) ;
+          //cout << "anuj 0\n" ;
+          found = rstr . find(prods[i][0] , found + 1) ;
+        }
+        for(int k = 1 ; k <= nullPos . size() ; k ++) {
+          //cout << k << " anuj 1\n" ;
+          for(int i1 = 0 ; i1 + k <= nullPos . size() ; i1 ++) {
+            //cout << i1 << " anuj 2\n" ;
+            string temp_rstr = rstr ;
+            for(int j1 = i1 , count = 0 ; count < k && j1 < nullPos . size() ; j1 ++ , count ++) {
+              //cout << j1 << " anuj 3\n" ;
+              temp_rstr . erase(temp_rstr . begin() + nullPos[j1] - count) ;
+            }
+            //cout << "Before ..\n" ;
+            int pos = find(rhs . begin() , rhs . end() , temp_rstr) - rhs . begin() ;
+            if(pos == rhs . size() || lhs[pos] != lhs[j]) {
+              rhs . push_back(temp_rstr) ;
+              lhs . push_back(lhs[j]) ;
+            }
+            //cout << "After ..\n" ;
+          }
+        }
+      }
+    }
+  }
+  */
+  /*
+  for(int i = 0 ; i < n ; i ++) {
+    if(containsNull[prods[i][0]]) {
+      string tt = "" ;
+      tt += prods[i][0] ;
+      tt += prods[i][0] ;
+      rhs . push_back(tt) ;
+      lhs . push_back(prods[i][0]) ;
+    }
+  }
+  */
   /*
   cout << "Printing L.H.S. and R.H.S.\n" ;
   for(int i = 0 ; i < rhs . size() ; i ++)
@@ -149,4 +195,7 @@ S->ABC
 A->a
 B->b
 C->c
+*/
+/*
+S->S+S|a|b
 */

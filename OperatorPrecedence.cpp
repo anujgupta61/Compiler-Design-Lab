@@ -157,43 +157,54 @@ void parseStr(string str) {
       bool is_reduced = false ;
       for(int i = temp . length() - 1 ; i >= start ; i --) {
         string temp1 = "" ;
-        cout << temp << " : temp\n" ;
+        //cout << temp << " : temp\n" ;
         for(int j = i ; j >= start ; j --)
           temp1 += temp[j] ;
-          cout << temp1 << "\n" ;
+        //cout << temp1 << "\n" ;
         //cout << "Finding " << temp1 << "\n" ;
         if(find(rhs . begin() , rhs . end() , temp1) != rhs . end()) { // Found in R.H.S.
             //cout << "inside\n" ;
             int pos = find(rhs . begin() , rhs . end() , temp1) - rhs . begin() ;
             char ch = lhs[pos] ;
             string temp2 = "" ;
+            /*
             for(int j = start + 1 ; j <= temp . length() - 1 ; j ++)
               temp2 += temp[j] ;
+            cout << "temp21 : " << temp2 << "\n" ;
+            */
             //cout << "Found at " << i << " " << temp . length() - 1 << "\n" ;
+            for(int j = 0 ; j < start ; j ++)
+              temp2 += temp[j] ;
+            temp2 += ch ;
             for(int j = i + 1 ; j <= temp . length() - 1 ; j ++)
                temp2 += temp[j] ;
+            //cout << "temp22 : " << temp2 << "\n" ;
+
             //cout << "Remaining " << temp2 << "\n" ;
             /*
             for(int j = start + 1 ; j <= temp . length() - 1 ; j ++)
               temp2 += temp[j] ;
             */
             temp = temp2 ;
-            temp . insert(0 , 1 , ch) ;
+            //temp . insert(0 , 1 , ch) ;
             is_reduced = true ;
             //cout << "After reduce - " << temp << "\n" ;
             break ;
         }
       }
-      cout << "out\n" ;
-      if(start == temp . length() - 1) {
+      //cout << "out\n" ;
+      if(start == temp . length()) {
+        //cout << "end here ..\n" ;
+        for(int i = temp . length() - 1 ; i >= 0 ; i --) {
+          s . push(temp[i]) ;
+        }
         break ;
       }
       if(! is_reduced) {
         start ++ ;
-        cout << "next\n" ;
+        //cout << "next\n" ;
         goto again ;
-      }
-      else {
+      } else {
         for(int i = temp . length() - 1 ; i >= 0 ; i --) {
           s . push(temp[i]) ;
         }
@@ -202,7 +213,9 @@ void parseStr(string str) {
       }
     }
   }
-  if(s . top() == 'S')
+  //cout << "final -\n" ;
+  printStkQ(s , q) ;
+  if(s . top() == 'S' && s . size() == 2)
     cout << "\nString parsed ...\n" ;
   else
     cout << "\nString not parsed ...\n" ;
