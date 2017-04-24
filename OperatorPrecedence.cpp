@@ -3,34 +3,58 @@ using namespace std ;
 
 vector<string> rhs ;
 vector<char> lhs ;
-map<char , bool> containsNull ;
 map<char , map<char , char> > opTable ;
 
 void buildTable() {
+  // Row-wise
   map<char , char> op1 ; // For id (t)
-  op1['t'] = '=' ;
+  op1['t'] = '_' ;
   op1['+'] = '<' ;
   op1['*'] = '<' ;
   op1['$'] = '<' ;
+  op1['('] = '<' ;
+  op1[')'] = '_' ;
   opTable['t'] = op1 ;
   map<char , char> op2 ; // For +
   op2['t'] = '>' ;
   op2['+'] = '>' ;
   op2['*'] = '>' ;
   op2['$'] = '<' ;
+  op2['('] = '<' ;
+  op2[')'] = '>' ;
   opTable['+'] = op2 ;
   map<char , char> op3 ; // For *
   op3['t'] = '>' ;
   op3['+'] = '<' ;
   op3['*'] = '>' ;
   op3['$'] = '<' ;
+  op3['('] = '<' ;
+  op3[')'] = '>' ;
   opTable['*'] = op3 ;
   map<char , char> op4 ; // For $
-  op3['t'] = '>' ;
-  op3['+'] = '>' ;
-  op3['*'] = '>' ;
-  op3['$'] = '=' ;
+  op4['t'] = '>' ;
+  op4['+'] = '>' ;
+  op4['*'] = '>' ;
+  op4['$'] = '_' ;
+  op4['('] = '_' ;
+  op4[')'] = '>' ;
   opTable['$'] = op4 ;
+  map<char , char> op5 ; // For (
+  op5['t'] = '_' ;
+  op5['+'] = '<' ;
+  op5['*'] = '<' ;
+  op5['$'] = '<' ;
+  op5['('] = '<' ;
+  op5[')'] = '_' ;
+  opTable['('] = op5 ;
+  map<char , char> op6 ; // For )
+  op6['t'] = '>' ;
+  op6['+'] = '>' ;
+  op6['*'] = '>' ;
+  op6['$'] = '_' ;
+  op6['('] = '=' ;
+  op6[')'] = '>' ;
+  opTable[')'] = op6 ;
 }
 
 vector<string> partProd(string str) {
@@ -38,20 +62,14 @@ vector<string> partProd(string str) {
   string temp = "" ;
   for(int i = 3 ; i < str . length() ; i ++) {
       if(str[i] == '|') {
-          if(temp == "$")
-            containsNull[str[0]] = true ;
-          else
-            parts . push_back(temp) ;
+          parts . push_back(temp) ;
           temp = "" ;
       } else {
-            temp = temp + str[i] ;
+           temp = temp + str[i] ;
       }
   }
   if(temp != "") {
-    if(temp == "$")
-      containsNull[str[0]] = true ;
-    else
-      parts . push_back(temp) ;
+     parts . push_back(temp) ;
   }
   return parts ;
 }
@@ -93,7 +111,7 @@ void parseStr(string str) {
   q . pop() ;
   printStkQ(s , q) ;
   cout << "\tShift\n" ;
-  while(! q . empty()) {
+  while(q . front() != '$') {
       string temp = "" ;
       while(s . size() != 1) {
         temp += s . top() ;
@@ -102,15 +120,17 @@ void parseStr(string str) {
       bool is_shift = true ;
       map<char , char> pre = opTable[q . front()] ;
       char pr = pre[temp[0]] ;
+      cout << temp[0] << " " << q . front() << " - " ;
+      cout << pr << "\n" ;
       if(pr == '>') { // Reduce
         for(int i = temp . length() - 1 ; i >= 0 ; i --) {
           string temp1 = "" ;
           for(int j = i ; j >= 0 ; j --)
             temp1 += temp[j] ;
-          //cout << "Finding " << temp1 << "\n" ;
+          cout << "Finding " << temp1 << "\n" ;
           if(find(rhs . begin() , rhs . end() , temp1) != rhs . end()) { // Found in R.H.S.
               is_shift = false ;
-              //cout << "inside\n" ;
+              cout << "inside\n" ;
               int pos = find(rhs . begin() , rhs . end() , temp1) - rhs . begin() ;
               char ch = lhs[pos] ;
               string temp2 = "" ;
@@ -124,14 +144,15 @@ void parseStr(string str) {
               break ;
           }
         }
-      } else {
+      } 
+	  //else {
         if(is_shift) {
           char ch = q . front() ;
           q . pop() ;
           if(ch != '$')
             temp . insert(0 , 1 , ch) ;
         }
-      }
+      //}
       for(int i = temp . length() - 1 ; i >= 0 ; i --) {
         s . push(temp[i]) ;
       }
@@ -152,13 +173,14 @@ void parseStr(string str) {
         temp += s . top() ;
         s . pop() ;
       }
+      reverse(temp . begin() , temp . end()) ;
       int start = 0 ;
       again :
       bool is_reduced = false ;
       for(int i = temp . length() - 1 ; i >= start ; i --) {
         string temp1 = "" ;
         //cout << temp << " : temp\n" ;
-        for(int j = i ; j >= start ; j --)
+        for(int j = start ; j <= i ; j ++)
           temp1 += temp[j] ;
         //cout << temp1 << "\n" ;
         //cout << "Finding " << temp1 << "\n" ;
@@ -176,7 +198,7 @@ void parseStr(string str) {
             for(int j = 0 ; j < start ; j ++)
               temp2 += temp[j] ;
             temp2 += ch ;
-            for(int j = i + 1 ; j <= temp . length() - 1 ; j ++)
+            for(int j = i + 1 ; j < temp . length() ; j ++)
                temp2 += temp[j] ;
             //cout << "temp22 : " << temp2 << "\n" ;
 
@@ -195,7 +217,7 @@ void parseStr(string str) {
       //cout << "out\n" ;
       if(start == temp . length()) {
         //cout << "end here ..\n" ;
-        for(int i = temp . length() - 1 ; i >= 0 ; i --) {
+        for(int i = 0 ; i < temp . length() ; i ++) {
           s . push(temp[i]) ;
         }
         break ;
@@ -205,7 +227,7 @@ void parseStr(string str) {
         //cout << "next\n" ;
         goto again ;
       } else {
-        for(int i = temp . length() - 1 ; i >= 0 ; i --) {
+        for(int i = 0 ; i < temp . length() ; i ++) {
           s . push(temp[i]) ;
         }
         printStkQ(s , q) ;
@@ -226,12 +248,11 @@ int main() {
   cout << "Enter the number of productions : " ;
   int n ;
   cin >> n ;
+  cout << "Enter " << n << " productions -\n" ;
   vector<string> prods(n) ;
   for(int i = 0 ; i < n ; i ++) {
     cin >> prods[i] ;
   }
-  for(int i = 0 ; i < n ; i ++)
-    containsNull[prods[i][0]] = false ;
   for(int i = 0 ; i < n ; i ++) {
     vector<string> temp = partProd(prods[i]) ;
     for(int j = 0 ; j < temp . size() ; j ++) {
@@ -251,7 +272,7 @@ int main() {
   return 0 ;
 }
 /*
-S->T+S|T
-T->F*T|F
-F->t
+S->S+T|T
+T->T*F|F
+F->(S)|t
 */
