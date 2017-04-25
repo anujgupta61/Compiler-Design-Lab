@@ -117,39 +117,38 @@ void parse(string str) {
   stack<char> s , s1 ;
   queue<char> q ;
   s . push('$') ;
-  cout << "\nStack\t\tNT-Stack\t\tString\t\tOperation\n\n" ;
+  cout << "\nStack\tNTs\tString\tOperation\n\n" ;
   for(int i = 0 ; i < str . length() ; i ++)
     q . push(str[i]) ;
   q . push('$') ;
   printStkQ(s , s1 , q) ;
-  cout << "\t\t_\t\t_\n" ;
+  cout << "_\t_\n" ;
   s . push(q . front()) ;
   q . pop() ;
   printStkQ(s , s1 , q) ;
-  cout << "\t\t_\t\tShift\n" ;
+  cout << "_\tShift\n" ;
   while(q . front() != '$' || s . top() != '$') {
     //cout << "top\n" ;
-  	char pre = opTable[q . front()][s . top()] ;
+    char pre = opTable[q . front()][s . top()] ;
     //cout << "pre : " << pre << "\n" ;
-	  if(pre == '_') {
-	  	cout << "Error in parsing ...\n" ;
-	  	return ;
-	  }
-	  if(pre == '<') { // Shift
-	  	char ch = q . front() ;
-	  	q . pop() ;
-	  	s . push(ch) ;
+    if(pre == '_') {
+      cout << "Error in parsing ...\n" ;
+      return ;
+    }
+    if(pre == '<') { // Shift
+      char ch = q . front() ;
+      q . pop() ;
+      s . push(ch) ;
       printStkQ(s , s1 , q) ;
-      cout << "\t\tShift\n" ;
-	  } else { // Reduce
+      cout << "\tShift\n" ;
+    } else { // Reduce
         string str ;
-        bool error = false ;
         if(pre == '=') {
           char ch1 = q . front() ;
           q . pop() ;
           s . push(ch1) ;
           printStkQ(s , s1 , q) ;
-          cout << "\t\tShift\n" ;
+          cout << "\tShift\n" ;
           //cout << "reducing=\n" ;
           char ch = s1 . top() ;
           s1 . pop() ;
@@ -163,8 +162,8 @@ void parse(string str) {
           temp += ch ;
           while(find(rhs . begin() , rhs . end() , str) == rhs . end()) { // String not found in R.H.S.
             if(find(rhs . begin() , rhs . end() , temp) == rhs . end()) {
-              error = true ;
-              break ;
+              cout << "Error in parsing ...\n" ;
+              return ;
             } else {
               temp = "" ;
               temp += ch ;
@@ -184,14 +183,27 @@ void parse(string str) {
             str += s . top() ;
             s . pop() ;
             if(find(rhs . begin() , rhs . end() , str) == rhs . end()) {
-              error = true ;
+              cout << "Error in parsing ...\n" ;
+              return ;
             } 
             //cout << "below\n" ;
           } else {
+            if(s1 . empty()) {
+              cout << "Error in parsing ...\n" ;
+              return ;
+            }
             char ch2 = s1 . top() ; 
             s1 . pop() ;
+            if(s . empty()) {
+              cout << "Error in parsing ...\n" ;
+              return ;
+            }
             char op = s . top() ;
             s . pop() ;
+            if(s1 . empty()) {
+              cout << "Error in parsing ...\n" ;
+              return ;
+            }
             char ch1 = s1 . top() ;
             s1 . pop() ;
             str = "" ;
@@ -206,8 +218,8 @@ void parse(string str) {
                 string temp2 = "" ;
                 temp2 += ch2 ;
                 if(find(rhs . begin() , rhs . end() , temp2) == rhs . end()) {
-                  error = true ;
-                  break ;
+                  cout << "Error in parsing ...\n" ;
+                  return ;
                 } else {
                   ch1 = beg ;
                   temp2 = "" ;
@@ -227,20 +239,15 @@ void parse(string str) {
               str += ch2 ;
             }
           }
-  	    }
-        if(error) {
-          cout << "Error in parsing ...\n" ;
-          return ;
-        } else {
-          //cout << "reduced ..\n" ;
-          int pos = find(rhs . begin() , rhs . end() , str) - rhs . begin() ;
-          char ch = lhs[pos] ;
-          s1 . push(ch) ;
-          printStkQ(s , s1 , q) ;
-          cout << "\t\tReduce\n" ;
-        }   
+        }
+        //cout << "reduced ..\n" ;
+        int pos = find(rhs . begin() , rhs . end() , str) - rhs . begin() ;
+        char ch = lhs[pos] ;
+        s1 . push(ch) ;
+        printStkQ(s , s1 , q) ;
+        cout << "\tReduce\n" ;
     }
-    if(! s1 . empty() && s1 . top() == 'S' && s1 . size() == 1 && q . front() == '$') {
+    if(! s1 . empty() && s1 . top() == 'S' && s1 . size() == 1 && q . front() == '$' && s . top() == '$') {
       cout << "String parsed ...\n" ;
       return ;
     } 
@@ -256,14 +263,15 @@ void parse(string str) {
     s1 . pop() ;
     s1 . push(ch) ;
     printStkQ(s , s1 , q) ;
-    cout << "\t\tReduce\n" ;
+    cout << "\tReduce\n" ;
   }
-  if(! s1 . empty() && s1 . top() == 'S' && s1 . size() == 1 && q . front() == '$') {
+  if(! s1 . empty() && s1 . top() == 'S' && s1 . size() == 1 && q . front() == '$' && s . top() == '$') {
     cout << "String parsed ...\n" ;
   } else {
     cout << "Error in parsing ...\n" ;
   }
 }
+
 
 int main() {
   buildTable() ;
